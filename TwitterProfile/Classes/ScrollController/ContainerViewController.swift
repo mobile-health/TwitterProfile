@@ -45,6 +45,7 @@ class ContainerViewController : UIViewController, UIScrollViewDelegate {
     
     
     deinit {
+        self.headerView.removeObserver(self, forKeyPath: #keyPath(UIView.bounds))
         self.panViews.forEach({ (arg0) in
             let (_, value) = arg0
             if let scrollView = value as? UIScrollView{
@@ -93,7 +94,8 @@ class ContainerViewController : UIViewController, UIScrollViewDelegate {
         headerView.constraint(to: containerScrollView, attribute: .trailing, secondAttribute: .trailing)
         headerView.constraint(to: containerScrollView, attribute: .top, secondAttribute: .top)
         headerView.constraint(to: containerScrollView, attribute: .width, secondAttribute: .width)
-        
+        headerView.addObserver(self, forKeyPath: #keyPath(UIView.bounds), options: [.new], context: nil)
+
         ///Add bottom view controller
         bottomVC = dataSource.bottomViewController()
         bottomVC.pageDelegate = self
@@ -131,7 +133,17 @@ class ContainerViewController : UIViewController, UIScrollViewDelegate {
         
     }
     
+    private var headerHeight: CGFloat? = nil
+    
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if let obj = object as? UIView, obj == headerView, keyPath == #keyPath(UIView.bounds) {
+            if !overlayScrollView.isDragging && !overlayScrollView.isDecelerating, headerHeight != headerView.bounds.height {
+                headerHeight = headerView.bounds.height
+                if let scroll = self.panViews[currentIndex] as? UIScrollView {
+                    updateOverlayScrollContentSize(with: scroll)
+                }
+            }
+        }
         if let obj = object as? UIScrollView, keyPath == #keyPath(UIScrollView.contentSize) {
             if let scroll = self.panViews[currentIndex] as? UIScrollView, obj == scroll {
                 updateOverlayScrollContentSize(with: scroll)
