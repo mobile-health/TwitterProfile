@@ -155,7 +155,7 @@ class ContainerViewController : UIViewController, UIScrollViewDelegate {
         contentOffsets[currentIndex] = scrollView.contentOffset.y
         let topHeight = bottomView.frame.minY - dataSource.minHeaderHeight()
         
-        if scrollView.contentOffset.y < topHeight{
+        if scrollView.contentOffset.y - topHeight < -0.0001{
             self.containerScrollView.contentOffset.y = scrollView.contentOffset.y
             self.panViews.forEach({ (arg0) in
                 let (_, value) = arg0
