@@ -57,7 +57,7 @@ public class ContainerViewController : UIViewController, UIScrollViewDelegate {
         })
     }
     
-    override func loadView() {
+    public override func loadView() {
         ///add container scroll view and put headerVC and  bottomPagerVC inside. content size will be superview height + header height.
         containerScrollView = UIScrollView()
         containerScrollView.scrollsToTop = false
@@ -76,7 +76,7 @@ public class ContainerViewController : UIViewController, UIScrollViewDelegate {
         
     }
     
-    override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
 
         ///Configure overlay scroll
@@ -135,7 +135,7 @@ public class ContainerViewController : UIViewController, UIScrollViewDelegate {
         
     }
     
-    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+    public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if let obj = object as? UIScrollView, keyPath == #keyPath(UIScrollView.contentSize) {
             if let scroll = self.panViews[currentIndex] as? UIScrollView, obj == scroll {
                 updateOverlayScrollContentSize(with: scroll)
@@ -151,7 +151,7 @@ public class ContainerViewController : UIViewController, UIScrollViewDelegate {
         return initialContentOffsets[index] ?? 0
     }
     
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+    public func scrollViewDidScroll(_ scrollView: UIScrollView) {
         contentOffsets[currentIndex] = scrollView.contentOffset.y
         let topHeight = bottomView.frame.minY - dataSource.minHeaderHeight()
         
@@ -176,7 +176,7 @@ public class ContainerViewController : UIViewController, UIScrollViewDelegate {
 //MARK: BottomPageDelegate
 extension ContainerViewController : BottomPageDelegate {
 
-    func tp_pageViewController(_ currentViewController: UIViewController?, didSelectPageAt index: Int) {
+    public func tp_pageViewController(_ currentViewController: UIViewController?, didSelectPageAt index: Int) {
         currentIndex = index
 
         if let offset = contentOffsets[index]{
