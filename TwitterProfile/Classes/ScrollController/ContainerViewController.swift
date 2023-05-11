@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ContainerViewController : UIViewController, UIScrollViewDelegate {
+public class ContainerViewController : UIViewController, UIScrollViewDelegate {
     private var containerScrollView: UIScrollView! //contains headerVC + bottomVC
     private var overlayScrollView: UIScrollView! //handles whole scroll logic
     private var panViews: [Int: UIView] = [:] {// bottom view(s)/scrollView(s)
@@ -26,6 +26,10 @@ class ContainerViewController : UIViewController, UIScrollViewDelegate {
     private var pagerTabHeight: CGFloat{
         return bottomVC.pagerTabHeight ?? 44
     }
+
+	private var checkBuffer: CGFloat {
+		return 1
+	}
     
     weak var dataSource: TPDataSource!
     weak var delegate: TPProgressDelegate?
@@ -139,20 +143,28 @@ class ContainerViewController : UIViewController, UIScrollViewDelegate {
         }
     }
     
+    private var initialContentOffsets: [Int: CGFloat] = [:]
+    private func getInitialContentOffsetY(index: Int) -> CGFloat {
+        if initialContentOffsets[index] == nil {
+            initialContentOffsets[index] = (self.panViews[index] as? UIScrollView)?.contentOffset.y
+        }
+        return initialContentOffsets[index] ?? 0
+    }
+    
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         contentOffsets[currentIndex] = scrollView.contentOffset.y
         let topHeight = bottomView.frame.minY - dataSource.minHeaderHeight()
         
-        if scrollView.contentOffset.y < topHeight{
+        if (scrollView.contentOffset.y + self.checkBuffer) < topHeight {
             self.containerScrollView.contentOffset.y = scrollView.contentOffset.y
             self.panViews.forEach({ (arg0) in
-                let (_, value) = arg0
-                (value as? UIScrollView)?.contentOffset.y = 0
+                let (viewIndex, value) = arg0
+                (value as? UIScrollView)?.contentOffset.y = getInitialContentOffsetY(index: viewIndex)
             })
             contentOffsets.removeAll()
         }else{
             self.containerScrollView.contentOffset.y = topHeight
-            (self.panViews[currentIndex] as? UIScrollView)?.contentOffset.y = scrollView.contentOffset.y - self.containerScrollView.contentOffset.y
+            (self.panViews[currentIndex] as? UIScrollView)?.contentOffset.y = scrollView.contentOffset.y - self.containerScrollView.contentOffset.y + getInitialContentOffsetY(index: currentIndex)
             
         }
         
