@@ -27,9 +27,9 @@ public class ContainerViewController : UIViewController, UIScrollViewDelegate {
         return bottomVC.pagerTabHeight ?? 44
     }
 
-	private var checkBuffer: CGFloat {
-		return 1
-	}
+    private var checkBuffer: CGFloat {
+        return 1
+    }
     
     weak var dataSource: TPDataSource!
     weak var delegate: TPProgressDelegate?
@@ -102,9 +102,8 @@ public class ContainerViewController : UIViewController, UIScrollViewDelegate {
         bottomVC = dataSource.bottomViewController()
         bottomVC.pageDelegate = self
         add(bottomVC, to: containerScrollView)
-        if let vc = bottomVC.currentViewController{
-            self.panViews[currentIndex] = vc.panView()
-        }
+        self.observePanView(bottomVC.currentViewController, at: currentIndex)
+
         bottomView.constraint(to: containerScrollView, attribute: .leading, secondAttribute: .leading)
         bottomView.constraint(to: containerScrollView, attribute: .trailing, secondAttribute: .trailing)
         bottomView.constraint(to: containerScrollView, attribute: .bottom, secondAttribute: .bottom)
@@ -171,6 +170,22 @@ public class ContainerViewController : UIViewController, UIScrollViewDelegate {
         let progress = self.containerScrollView.contentOffset.y / topHeight
         self.delegate?.tp_scrollView(self.containerScrollView, didUpdate: progress)
     }
+    
+    private func observePanView(_ viewController: UIViewController?, at index: Int) {
+        guard let newPanView = viewController?.panView() else {
+            return
+        }
+        if let oldPanView = self.panViews[index]  {
+            if oldPanView != newPanView {
+                if let oldScrollView = oldPanView as? UIScrollView {
+                    oldScrollView.removeObserver(self, forKeyPath: #keyPath(UIScrollView.contentSize))
+                }
+                self.panViews[index] = newPanView
+            }
+        } else {
+            self.panViews[index] = newPanView
+        }
+    }
 }
 
 //MARK: BottomPageDelegate
@@ -184,12 +199,8 @@ extension ContainerViewController : BottomPageDelegate {
         }else{
             self.overlayScrollView.contentOffset.y = self.containerScrollView.contentOffset.y
         }
-        
-        if let vc = currentViewController, self.panViews[currentIndex] == nil{
-            self.panViews[currentIndex] = vc.panView()
-        }
-        
-        
+        self.observePanView(currentViewController, at: currentIndex)
+
         if let panView = self.panViews[currentIndex]{
             updateOverlayScrollContentSize(with: panView)
         }
