@@ -209,6 +209,10 @@ extension ContainerViewController : BottomPageDelegate {
     public func tp_pageViewController(_ currentViewController: UIViewController?, didModifyContentOffset offset: CGPoint, pageIndex: Int) {
         if currentIndex == pageIndex {
             
+            if let scrollView = currentViewController?.panView() as? UIScrollView {
+                self.scrollViewDidScroll(scrollView)
+            }
+            
             self.observePanView(currentViewController, at: currentIndex)
             
             if let offset = contentOffsets[currentIndex]{
