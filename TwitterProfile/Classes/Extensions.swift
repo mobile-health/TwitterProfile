@@ -50,12 +50,12 @@ public extension UIViewController {
         }
     }
     
-    func tp_configure(with dataSource: TPDataSource, delegate: TPProgressDelegate? = nil) {
+    func tp_configure(with dataSource: TPDataSource, delegate: TPProgressDelegate? = nil, parentView: UIView) {
         let vc = ContainerViewController()
         vc.dataSource = dataSource
         vc.delegate = delegate
         self.add(vc)
-        vc.view.pinEdges(to: self.view)
+        vc.view.pinEdges(to: parentView, insets: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0))
     }
 }
 
