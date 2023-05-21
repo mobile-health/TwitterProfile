@@ -168,7 +168,7 @@ public class ContainerViewController : UIViewController, UIScrollViewDelegate {
         }
         
         let progress = self.containerScrollView.contentOffset.y / topHeight
-        self.delegate?.tp_scrollView(self.containerScrollView, didUpdate: progress)
+        self.delegate?.tp_scrollView(self.containerScrollView, didUpdate: progress, overlayScrollView: self.overlayScrollView)
     }
     
     private func observePanView(_ viewController: UIViewController?, at index: Int) {
