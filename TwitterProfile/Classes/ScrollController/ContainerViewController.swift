@@ -142,10 +142,6 @@ public class ContainerViewController : UIViewController, UIScrollViewDelegate {
         }
     }
     
-    private func getInitialContentInsetY(index: Int) -> CGFloat {
-        return -44
-    }
-    
     public func scrollViewDidScroll(_ scrollView: UIScrollView) {
         contentOffsets[currentIndex] = scrollView.contentOffset.y
         let topHeight = bottomView.frame.minY - dataSource.minHeaderHeight()
@@ -208,29 +204,20 @@ extension ContainerViewController : BottomPageDelegate {
     
     public func tp_pageViewController(_ currentViewController: UIViewController?, didModifyContentOffset offset: CGPoint, pageIndex: Int) {
         if currentIndex == pageIndex {
-            
-            if let scrollView = currentViewController?.panView() as? UIScrollView {
-                self.scrollViewDidScroll(scrollView)
-            }
-            
             self.observePanView(currentViewController, at: currentIndex)
             
-            if let offset = contentOffsets[currentIndex]{
-                self.overlayScrollView.contentOffset.y = offset
-            }else{
-                self.overlayScrollView.contentOffset.y = self.containerScrollView.contentOffset.y
+            if let tabScrollView = self.panViews[currentIndex] as? UIScrollView {
+                let topHeight = bottomView.frame.minY - dataSource.minHeaderHeight()
+
+                if tabScrollView.contentOffset.y < self.checkBuffer {
+                    self.overlayScrollView.contentOffset.y = self.containerScrollView.contentOffset.y
+                } else {
+                    self.containerScrollView.contentOffset.y = topHeight
+                    self.overlayScrollView.contentOffset.y = tabScrollView.contentOffset.y + topHeight
+                }
             }
-            
-
-            if let panView = self.panViews[currentIndex]{
-                updateOverlayScrollContentSize(with: panView)
-            }
-
-
         } else {
             contentOffsets[pageIndex] = offset.y
         }
     }
-
-
 }
