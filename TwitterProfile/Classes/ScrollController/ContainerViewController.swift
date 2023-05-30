@@ -14,6 +14,7 @@ public class ContainerViewController : UIViewController, UIScrollViewDelegate {
     private var panViews: [Int: UIView] = [:] {// bottom view(s)/scrollView(s)
         didSet{
             if let scrollView = panViews[currentIndex] as? UIScrollView{
+                scrollView.contentInsetAdjustmentBehavior = .never
                 scrollView.panGestureRecognizer.require(toFail: overlayScrollView.panGestureRecognizer)
                 scrollView.donotAdjustContentInset()
                 scrollView.addObserver(self, forKeyPath: #keyPath(UIScrollView.contentSize), options: .new, context: nil)
@@ -62,11 +63,13 @@ public class ContainerViewController : UIViewController, UIScrollViewDelegate {
         containerScrollView = UIScrollView()
         containerScrollView.scrollsToTop = false
         containerScrollView.showsVerticalScrollIndicator = false
+        containerScrollView.contentInsetAdjustmentBehavior = .never
         
         ///add overlay scroll view for handling content offsets. content size will be superview height + bottom view contentSize (if UIScrollView) or height (if UIView)
         overlayScrollView = UIScrollView()
         overlayScrollView.showsVerticalScrollIndicator = false
         overlayScrollView.backgroundColor = UIColor.clear
+        overlayScrollView.contentInsetAdjustmentBehavior = .never
 
         ///wrap all in a UIView
         let view = UIView()
@@ -117,8 +120,19 @@ public class ContainerViewController : UIViewController, UIScrollViewDelegate {
         delegate?.tp_scrollViewDidLoad(overlayScrollView)
     }
     
-    private func updateOverlayScrollContentSize(with bottomView: UIView){
-        self.overlayScrollView.contentSize = getContentSize(for: bottomView)
+    private var pendingContentSizes: [Int: CGSize] = [:]
+    private func updateOverlayScrollContentSize(with bottomView: UIView, pageIndex: Int){
+        let oldContentSize = self.overlayScrollView.contentSize
+        let newContentSize = self.getContentSize(for: bottomView)
+        if newContentSize == oldContentSize {
+            return
+        }
+        let oldY = self.overlayScrollView.contentOffset.y
+        if oldY < 0 {
+            self.pendingContentSizes[pageIndex] = newContentSize
+        } else {
+            self.overlayScrollView.contentSize = newContentSize
+        }
     }
     
     private func getContentSize(for bottomView: UIView) -> CGSize{
@@ -137,12 +151,19 @@ public class ContainerViewController : UIViewController, UIScrollViewDelegate {
     public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if let obj = object as? UIScrollView, keyPath == #keyPath(UIScrollView.contentSize) {
             if let scroll = self.panViews[currentIndex] as? UIScrollView, obj == scroll {
-                updateOverlayScrollContentSize(with: scroll)
+                updateOverlayScrollContentSize(with: scroll, pageIndex: currentIndex)
             }
         }
     }
     
     public func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        if scrollView.contentOffset.y > 0 {
+            if let size = self.pendingContentSizes[currentIndex] {
+                self.pendingContentSizes.removeValue(forKey: currentIndex)
+                scrollView.contentSize = size
+            }
+        }
+        
         contentOffsets[currentIndex] = scrollView.contentOffset.y
         let topHeight = bottomView.frame.minY - dataSource.minHeaderHeight()
         let scrollViewContentOffsetYDelta = scrollView.contentOffset.y - topHeight
@@ -198,7 +219,7 @@ extension ContainerViewController : BottomPageDelegate {
         self.observePanView(currentViewController, at: currentIndex)
 
         if let panView = self.panViews[currentIndex]{
-            updateOverlayScrollContentSize(with: panView)
+            updateOverlayScrollContentSize(with: panView, pageIndex: currentIndex)
         }
     }
     
