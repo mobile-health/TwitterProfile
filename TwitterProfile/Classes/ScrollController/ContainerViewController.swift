@@ -230,11 +230,12 @@ extension ContainerViewController : BottomPageDelegate {
             if let tabScrollView = self.panViews[currentIndex] as? UIScrollView {
                 let topHeight = bottomView.frame.minY - dataSource.minHeaderHeight()
 
-                if tabScrollView.contentOffset.y < self.checkBuffer {
+                let scrollY = offset.y // tabScrollView.contentOffset.y
+                if scrollY < self.checkBuffer {
                     self.overlayScrollView.contentOffset.y = self.containerScrollView.contentOffset.y
                 } else {
                     self.containerScrollView.contentOffset.y = topHeight
-                    self.overlayScrollView.contentOffset.y = tabScrollView.contentOffset.y + topHeight
+                    self.overlayScrollView.contentOffset.y = scrollY + topHeight
                 }
             }
         } else {
