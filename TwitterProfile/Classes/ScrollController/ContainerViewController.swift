@@ -27,6 +27,10 @@ public class ContainerViewController : UIViewController, UIScrollViewDelegate {
     private var pagerTabHeight: CGFloat{
         return bottomVC.pagerTabHeight ?? 44
     }
+    
+    private var pagerTabStickyOffset: CGFloat {
+        return bottomVC.stickyPagerTab ? 0 : pagerTabHeight
+    }
 
     private var checkBuffer: CGFloat {
         return 1
@@ -116,6 +120,8 @@ public class ContainerViewController : UIViewController, UIScrollViewDelegate {
                               attribute: .height,
                               secondAttribute: .height)
         
+        containerScrollView.bringSubviewToFront(headerVC.view)
+
         ///let know others scroll view configuration is done
         delegate?.tp_scrollViewDidLoad(overlayScrollView)
     }
@@ -165,7 +171,7 @@ public class ContainerViewController : UIViewController, UIScrollViewDelegate {
         }
         
         contentOffsets[currentIndex] = scrollView.contentOffset.y
-        let topHeight = bottomView.frame.minY - dataSource.minHeaderHeight()
+        let topHeight = bottomView.frame.minY - dataSource.minHeaderHeight() + pagerTabStickyOffset
         let scrollViewContentOffsetYDelta = scrollView.contentOffset.y - topHeight
 
         if scrollViewContentOffsetYDelta < -self.checkBuffer {
@@ -228,7 +234,7 @@ extension ContainerViewController : BottomPageDelegate {
             self.observePanView(currentViewController, at: currentIndex)
             
             if let tabScrollView = self.panViews[currentIndex] as? UIScrollView {
-                let topHeight = bottomView.frame.minY - dataSource.minHeaderHeight()
+                let topHeight = bottomView.frame.minY - dataSource.minHeaderHeight() + pagerTabStickyOffset
 
                 let scrollY = offset.y // tabScrollView.contentOffset.y
                 if scrollY < self.checkBuffer {
