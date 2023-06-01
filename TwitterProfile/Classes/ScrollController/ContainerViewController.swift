@@ -174,6 +174,7 @@ public class ContainerViewController : UIViewController, UIScrollViewDelegate {
         let topHeight = bottomView.frame.minY - dataSource.minHeaderHeight() + pagerTabStickyOffset
         let scrollViewContentOffsetYDelta = scrollView.contentOffset.y - topHeight
 
+        var tabScrollViewOffsetY: CGFloat = 0
         if scrollViewContentOffsetYDelta < -self.checkBuffer {
             self.containerScrollView.contentOffset.y = scrollView.contentOffset.y
             self.panViews.forEach({ (arg0) in
@@ -187,11 +188,17 @@ public class ContainerViewController : UIViewController, UIScrollViewDelegate {
             self.containerScrollView.contentOffset.y = topHeight
             if let tabScrollView = self.panViews[currentIndex] as? UIScrollView {
                 tabScrollView.contentOffset.y = scrollViewContentOffsetYDelta - tabScrollView.contentInset.top
+                tabScrollViewOffsetY = tabScrollView.contentOffset.y
             }
         }
         
         let progress = self.containerScrollView.contentOffset.y / topHeight
-        self.delegate?.tp_scrollView(self.containerScrollView, didUpdate: progress, overlayScrollView: self.overlayScrollView)
+        self.delegate?.tp_scrollView(
+            self.containerScrollView,
+            didUpdate: progress,
+            overlayScrollView: self.overlayScrollView,
+            tabScrollViewOffsetY: tabScrollViewOffsetY
+        )
     }
     
     private func observePanView(_ viewController: UIViewController?, at index: Int) {
