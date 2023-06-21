@@ -197,7 +197,8 @@ public class ContainerViewController : UIViewController, UIScrollViewDelegate {
             self.containerScrollView,
             didUpdate: progress,
             overlayScrollView: self.overlayScrollView,
-            tabScrollViewOffsetY: tabScrollViewOffsetY
+            tabScrollViewOffsetY: tabScrollViewOffsetY,
+            pageIndex: currentIndex
         )
     }
     

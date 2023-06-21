@@ -9,6 +9,6 @@
 import UIKit
 
 public protocol TPProgressDelegate: class{
-    func tp_scrollView(_ scrollView: UIScrollView, didUpdate progress: CGFloat, overlayScrollView: UIScrollView, tabScrollViewOffsetY: CGFloat)
+    func tp_scrollView(_ scrollView: UIScrollView, didUpdate progress: CGFloat, overlayScrollView: UIScrollView, tabScrollViewOffsetY: CGFloat, pageIndex: Int)
     func tp_scrollViewDidLoad(_ scrollView: UIScrollView)
 }
